@@ -156,5 +156,5 @@ int findMVP(int* goals, int* assists, int size)
     }
 
   }
-  return index;
+  return index; //returns where mvp is at
 }
