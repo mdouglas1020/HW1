@@ -6,10 +6,10 @@
 #define MAX_LINE 100
 #define MAX_NAME 30
 
-int countLinesInFile(FILE* fPtr);
+int countLinesInFile(FILE* fPtr); //CHECK
 int findPlayerByName(char** names, char* target, int size);
 int findMVP(int* goals, int* assists, int size);
-void printPlayers(int* goals, int* assists, char** names, int size);  //KINDA CHECK
+void printPlayers(int* goals, int* assists, char** names, int size);  //CHECK
 void allocateMemory(int** goals, int** assists, char*** names, int size); //CHECK
 void sortPlayersByGoals(int* goals, int* assists, char** names, int size);
 void writeToFile(FILE* fPtr, int* goals, int* assists, char** names, int size);
@@ -38,22 +38,15 @@ int main(int argc, char** argv)
 
   allocateMemory(&goals, &assists, &names, lines);
   readLinesFromFile(fptr, goals, assists, names, lines);
-
-  int i;
-
-  for(i = 0; i < lines; i++)
-  {
-    printf("%s %d %d\n", *(names + i), *(goals + i), *(assists + i));
-  }
-
-  printf("\n\n\n");
-
+  printPlayers(goals, assists, names, lines);
   sortPlayersByGoals(goals, assists, names, lines);
+  printPlayers(goals, assists, names, lines);
 
-  for(i = 0; i < lines; i++)
-  {
-    printf("%s %d %d\n", *(names + i), *(goals + i), *(assists + i));
-  }
+  int mvp = findMVP(goals, assists, lines);
+  int points = *(goals + mvp) + *(assists + mvp);
+  printf("MVP is %s with %d\n", *(names + mvp), points);
+
+
   return 0;
 }
 
@@ -95,7 +88,7 @@ void readLinesFromFile(FILE* fptr, int* goals, int* assists, char** names, int s
     if(fgets(line,MAX_LINE, fptr)!=NULL)
      {
        hold=strtok(line," ");
-       strcpy(names[i],hold);
+       strcpy(*(names + i),hold);
        hold=strtok(NULL," ");
        goals[i]=atoi(hold);
        hold=strtok(NULL," ");
@@ -133,8 +126,35 @@ void sortPlayersByGoals(int* goals, int* assists, char** names, int size)
     strcpy(*(names + key), *(names + i));
     strcpy(*(names + i), temp);
 
-
   }
 
+}
 
+void printPlayers(int* goals, int* assists, char** names, int size)
+{
+  int i;
+
+  for(i = 0; i < size; i++)
+  {
+    printf("%s %d %d\n", *(names + i), *(goals + i), *(assists + i));
+  }
+
+  printf("\n\n");
+}
+
+int findMVP(int* goals, int* assists, int size)
+{
+  int i;
+  int mvp = 0;
+  int index;
+  for (i = 0; i < size; i++)
+  {
+    if(*(goals + i) + *(assists + i) > mvp )
+    {
+      mvp = *(goals + i) + *(assists + i);
+      index = i;
+    }
+
+  }
+  return index;
 }
