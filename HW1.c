@@ -9,21 +9,21 @@
 int countLinesInFile(FILE* fPtr);
 int findPlayerByName(char** names, char* target, int size);
 int findMVP(int* goals, int* assists, int size);
-void printPlayers(int* goals, int* assists, char** names, int size);
-void allocateMemory(int** goals, int** assists, char*** names, int size);
+void printPlayers(int* goals, int* assists, char** names, int size);  //KINDA CHECK
+void allocateMemory(int** goals, int** assists, char*** names, int size); //CHECK
 void sortPlayersByGoals(int* goals, int* assists, char** names, int size);
 void writeToFile(FILE* fPtr, int* goals, int* assists, char** names, int size);
-void readLinesFromFile(FILE* fPtr, int* goals, int* assists, char** names, int numLines);
+void readLinesFromFile(FILE* fPtr, int* goals, int* assists, char** names, int numLines);  //CHECK
 
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
-  if(argc != 3)  //Checks for correct command line
+  if(argc != 2)  //Checks for correct command line
   {
     printf("Incorrect number of arguments\n");
     return 0;
   }
-  FILE* fptr = fopen(fptr, "r");
+  FILE* fptr = fopen(*(argv +1), "r");
 
   if(fptr == NULL)
   {
@@ -32,11 +32,28 @@ int main(int argc, char* argv[])
   }
   int lines = countLinesInFile(fptr);
 
-  // int* goals = malloc(sizeof(int)*lines);
-  // int* assists = malloc(sizeof(int)*lines);
-  // char** names = malloc(sizeof(char)*MAX_NAME);
+  int* goals = NULL;
+  int* assists = NULL;
+  char** names = NULL;
 
-  printf("The amount of lines are %d\n", lines);
+  allocateMemory(&goals, &assists, &names, lines);
+  readLinesFromFile(fptr, goals, assists, names, lines);
+
+  int i;
+
+  for(i = 0; i < lines; i++)
+  {
+    printf("%s %d %d\n", *(names + i), *(goals + i), *(assists + i));
+  }
+
+  printf("\n\n\n");
+
+  sortPlayersByGoals(goals, assists, names, lines);
+
+  for(i = 0; i < lines; i++)
+  {
+    printf("%s %d %d\n", *(names + i), *(goals + i), *(assists + i));
+  }
   return 0;
 }
 
@@ -45,17 +62,79 @@ int countLinesInFile(FILE* fptr)
   char c;
   int lines = 0;
 
-  while((c = fgets(fptr))!= feof(fptr))
+  while((c = fgetc(fptr))!= EOF)
   {
     if(c == '\n')
     ++lines;
   }
-  fclose(fptr);
+  rewind(fptr);
+
   return lines;
 }
 
-// void readLinesFromFile(FILE* fptr, int* goals, int* assists, char** names, int numLines)
-// {
-//
-//
-// }
+void allocateMemory(int** goals, int** assists, char*** names, int lines)
+{
+  *goals = malloc(sizeof(int)*lines);
+*assists = malloc(sizeof(int)*lines);
+ *names = malloc(sizeof(char*)*lines);
+  int i;
+
+  for(i=0; i < lines; i++)
+  {
+    *(*names + i) = malloc(sizeof(char)*MAX_NAME);
+  }
+}
+
+void readLinesFromFile(FILE* fptr, int* goals, int* assists, char** names, int size)
+{
+  char *line= malloc(sizeof(char)*MAX_LINE);
+  int i;
+  char* hold = NULL;
+  for(i = 0; i < size; i++)
+  {
+    if(fgets(line,MAX_LINE, fptr)!=NULL)
+     {
+       hold=strtok(line," ");
+       strcpy(names[i],hold);
+       hold=strtok(NULL," ");
+       goals[i]=atoi(hold);
+       hold=strtok(NULL," ");
+       assists[i]=atoi(hold);
+     }
+  }
+free(line);
+}
+void swap(int* x, int* y)
+{
+  int temp = *x;
+  *x = *y;
+  *y = temp;
+}
+
+void sortPlayersByGoals(int* goals, int* assists, char** names, int size)
+{
+  int i, key, j;
+
+  for(i = 0; i < size; i ++)
+  {
+    key = i;
+
+    for(j = i+1; j<size; j++)
+    {
+      if (*(goals + j) > *(goals + key))
+      {
+        key = j;
+      }
+    }
+    swap((goals + key), (goals + i));
+    swap((assists + key), (assists + i));
+    char* temp = malloc(sizeof(char*)*MAX_NAME);
+    strcpy(temp, *(names + key));
+    strcpy(*(names + key), *(names + i));
+    strcpy(*(names + i), temp);
+
+
+  }
+
+
+}
